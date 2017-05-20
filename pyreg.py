@@ -28,6 +28,7 @@ class SimpleLinearRegression:  # 단순 선형회귀 클래스
             plt.show()
 
         elif graph is 2:
+            print(self.gradient)
             plt.plot(self.x_data, self.y_data, 'ro')  # 회귀식 그래프와 산포도를 함께 표현
             plt.plot(self.x_data, self.gradient * self.x_data + self.intercept)
             plt.xlabel('x')
@@ -87,7 +88,5 @@ def main():
     s.draw(0)
     s.draw(1)
     s.draw(2)
-
-    s.reg(0, 0)
 
 main()
