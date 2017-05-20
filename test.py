@@ -21,3 +21,4 @@ c = mysheet.cell(row = 2, column=3)
 #  무작위로 선정한 데이터세트를 이용한 선형회귀분석 예시
 
 s = pyreg.SimpleLinearRegression()
+

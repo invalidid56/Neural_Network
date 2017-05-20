@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
+from sympy import symbols, Limit, Derivative
 
 
 class SimpleLinearRegression:  # 단순 선형회귀 클래스
@@ -56,6 +57,21 @@ class SimpleLinearRegression:  # 단순 선형회귀 클래스
     def f(self, x):  # 회귀식
         return self.gradient*x + self.intercept
 
+    def reg(self, k, v):
+        W, x, h, a = symbols('W, x, h, a')  # 기울기, 절편, 독립변수 x
+        y = W*x  # 회귀식
+
+        op = sum([(self.y_data[i]-y.subs({x: i}))**2 for i in range(self.p)])  # 비용함수
+        d = Derivative(op, W)
+
+        print(d.doit())
+        r = []
+        print(np.arange(-1.0, 1.0, 0.25))
+        for i in np.arange(-1.0, 1.0, 0.2):
+            r.append(d.doit().subs({W: i}))
+        self.gradient = min(r)
+        self.intercept = 0
+        print(self.f(1))
 
 def main():
     p = int(input('Input number of points : '))  # 점 개수
@@ -65,12 +81,13 @@ def main():
         y = x * 0.1 + 0.3 + np.random.normal(0.0, 0.03)
         p_set.append(([x, y]))
 
-    s = SimpleLinearRegression(p_set)
+    s = SimpleLinearRegression(p_set)   
     s.draw()  # 그래프 그리기
     s.regress(16)
     s.draw(0)
     s.draw(1)
     s.draw(2)
 
-if __name__ is '__main__':
-    main()
+    s.reg(0, 0)
+
+main()
