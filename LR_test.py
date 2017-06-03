@@ -1,8 +1,6 @@
 import numpy as np
-from sympy import symbols, Derivative
+import sympy as sp
 import matplotlib.pyplot as plt
-
-
 
 p = 100
 
@@ -16,32 +14,32 @@ for i in range(p):  # 산포도 생성
 x_data = [p_set[i][0] for i in range(len(p_set))]
 y_data = [p_set[i][1] for i in range(len(p_set))]
 
-f = lambda W, x : W*x
+def draw(W, b, x=x_data, y=y_data):
+    plt.plot(x, y, 'ro')
+    plt.plot(x, [W*x[i]+b for i in range(p)])
 
-W, x = symbols('W, x')
-y = W*x
+    plt.show()
 
-op = sum([(y_data[i] - y.subs({x: i})) ** 2 for i in range(p)])  # 비용함수
+w, b, x = sp.symbols('w b x')
 
-d = Derivative(op, W)
+f = w*x+b
+t = type(lambda:None)
+print(t)
+cost = (1/(2*p)) * sum([(y_data[i]-f.subs({x:i}))**2 for i in range(p)])  # 오차함수
+W = 0; nW = -1  # w 초기값, newW
+B = 0; nB = 0.3  # b 초기값
+a = 0.0005  # 학습률, Learning Rate
+tolerance = 0.00001  # 오차범위
 
-def compare(v1, v2):
-    if v1-v2 > 0:
-        return 0
-    else:
-        return 1
+while abs(nW-W) > tolerance:
+    W, B = nW, nB
+    nW = W-a*sp.diff(cost, w).subs({w: W, b: B})
+    print(nW-W)
+    draw(nW, nB)
+print()
+#while abs(nB-B) > tolerance:
+#    B = nB
+#    nB = B-a*sp.diff(cost, b).subs({w: W, b: B})
 
-k= [1.0]
-for i in range(10):
-    k.append(k[-1]*0.5)
-w = -1
-for i in k:
-    w=w-d.doit().subs({W:w})*abs(1/d.doit().subs({W:w}))*i
-print(w)
-
-w = [w]
-plt.plot(x_data, y_data, 'ro')  # 회귀식 그래프와 산포도를 함께 표현
-plt.plot(x_data, w *x_data)
-plt.xlabel('x')
-plt.ylabel('y')
-plt.show()
+draw(nW, nB)
+print(nW, nB)

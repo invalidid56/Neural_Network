@@ -28,7 +28,7 @@ class SimpleLinearRegression:  # 단순 선형회귀 클래스
             plt.show()
 
         elif graph is 2:
-            print(self.gradient)
+            print(self.gradient, self.intercept)
             plt.plot(self.x_data, self.y_data, 'ro')  # 회귀식 그래프와 산포도를 함께 표현
             plt.plot(self.x_data, self.gradient * self.x_data + self.intercept)
             plt.xlabel('x')
@@ -57,22 +57,6 @@ class SimpleLinearRegression:  # 단순 선형회귀 클래스
 
     def f(self, x):  # 회귀식
         return self.gradient*x + self.intercept
-
-    def reg(self, k, v):
-        W, x, h, a = symbols('W, x, h, a')  # 기울기, 절편, 독립변수 x
-        y = W*x  # 회귀식
-
-        op = sum([(self.y_data[i]-y.subs({x: i}))**2 for i in range(self.p)])  # 비용함수
-        d = Derivative(op, W)
-
-        print(d.doit())
-        r = []
-        print(np.arange(-1.0, 1.0, 0.25))
-        for i in np.arange(-1.0, 1.0, 0.2):
-            r.append(d.doit().subs({W: i}))
-        self.gradient = min(r)
-        self.intercept = 0
-        print(self.f(1))
 
 def main():
     p = int(input('Input number of points : '))  # 점 개수
