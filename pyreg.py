@@ -1,8 +1,6 @@
 import numpy as np
-import tensorflow as tf
 import matplotlib.pyplot as plt
-from sympy import symbols, Limit, Derivative
-
+import sympy as sp
 
 class SimpleLinearRegression:  # 단순 선형회귀 클래스
     def __init__(self, dataset):
@@ -22,7 +20,7 @@ class SimpleLinearRegression:  # 단순 선형회귀 클래스
             plt.show()
 
         elif graph is 1:  # 회귀식 그래프
-            plt.plot(self.x_data, self.gradient * self.x_data + self.intercept)
+            plt.plot(self.x_data, [self.gradient * self.x_data[i] + self.intercept for i in range(self.p)])
             plt.xlabel('x')
             plt.ylabel('y')
             plt.show()
@@ -30,33 +28,30 @@ class SimpleLinearRegression:  # 단순 선형회귀 클래스
         elif graph is 2:
             print(self.gradient, self.intercept)
             plt.plot(self.x_data, self.y_data, 'ro')  # 회귀식 그래프와 산포도를 함께 표현
-            plt.plot(self.x_data, self.gradient * self.x_data + self.intercept)
+            plt.plot(self.x_data, [self.gradient * self.x_data[i] + self.intercept for i in range(self.p)])
             plt.xlabel('x')
             plt.ylabel('y')
             plt.show()
 
-    def regress(self, k):  # 훈련
-        a = tf.Variable(tf.random_uniform([1], -1.0, 1.0))  # 기울기
-        b = tf.Variable(tf.zeros([1]))  # x 절편
-        y = a*self.x_data+b  # 회귀식
-        loss = tf.reduce_mean(tf.square(y - self.y_data))  # 비용함수 생성
+    def regress(self, a=0.005, tolerance = 0.00001):  # 학습 메서드, a : 학습률(Learning Rate), tolerance : 오차범위
+        w, b, x = sp.symbols('w b x')  # 심볼릭 변수 정의
 
-        optimizer = tf.train.GradientDescentOptimizer(0.5)  # 옵티마이저 생성
-        train = optimizer.minimize(loss)  # 비용함수를 최소화
+        f = w * x + b  # 회귀식 원형 정의
+        cost = (1 / (2 * self.p)) * sum([(self.y_data[i] - f.subs({x: self.x_data[i]})) ** 2 for i in range(self.p)])
+        # 오차함수 : 보고서 ()번 식 참조
 
-        init = tf.global_variables_initializer()  # 변수 초기화
+        W, nW, B, nB = 0, -1, 0, -1  # 이전 W, 갱신 W, 이전 B, 갱신 B
 
-        sess = tf.Session()  # 세션 생성
-        sess.run(init)  # 초기화 실행
-
-        for step in range(k):  # k번 반복하여 학습
-            sess.run(train)
-
-        self.gradient = sess.run(a)  # 기울기, 절편 값 지정
-        self.intercept = sess.run(b)
+        while abs(nW - W) > tolerance:  # W 변화량이 오차범위보다 클 경우에만 루프 수행
+            W, B = nW, nB  # 이전 W 값 갱신
+            nW = W - a * sp.diff(cost, w).subs({w: W, b: B})  # 신규 W 값 갱신 : 보고서 ()번 식 참조
+            nB = B - a * sp.diff(cost, b).subs({w: W, b: B})  # 신규 b 값 갱신 : 보고서 ()번 식 참조
+        self.gradient, self.intercept = nW, nB
+        return nW, nB
 
     def f(self, x):  # 회귀식
         return self.gradient*x + self.intercept
+
 
 def main():
     p = int(input('Input number of points : '))  # 점 개수
@@ -68,7 +63,7 @@ def main():
 
     s = SimpleLinearRegression(p_set)   
     s.draw()  # 그래프 그리기
-    s.regress(16)
+    s.regress()
     s.draw(0)
     s.draw(1)
     s.draw(2)

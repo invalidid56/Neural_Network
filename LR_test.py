@@ -25,17 +25,13 @@ w, b, x = sp.symbols('w b x')
 f = w*x+b
 cost = (1/(2*p)) * sum([(y_data[i]-f.subs({x:x_data[i]}))**2 for i in range(p)])  # 오차함수
 W = 0; nW = -1  # w 초기값, newW
-B = 0; nB = 0.3  # b 초기값
+B = 0; nB = -1  # b 초기값
 a = 0.005  # 학습률, Learning Rate
 tolerance = 0.00001  # 오차범위
 
 while abs(nW-W) > tolerance:
     W, B = nW, nB
     nW = W-a*sp.diff(cost, w).subs({w: W, b: B})
-    print(W, B)
+    nB = B - a * sp.diff(cost, b).subs({w: W, b: B})
 
-#while abs(nB-B) > tolerance:
-#    B = nB
-#    nB = B-a*sp.diff(cost, b).subs({w: W, b: B})
-
-draw(W, B)
+draw(nW, nB)
