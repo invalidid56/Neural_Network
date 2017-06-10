@@ -41,17 +41,22 @@ class SimpleLinearRegression:  # 단순 선형회귀 클래스
         # 오차함수 : 보고서 ()번 식 참조
 
         W, nW, B, nB = 0, -1, 0, -1  # 이전 W, 갱신 W, 이전 B, 갱신 B
-
-        while abs(nW - W) > tolerance:  # W 변화량이 오차범위보다 클 경우에만 루프 수행
-            W, B = nW, nB  # 이전 W 값 갱신
-            nW = W - a * sp.diff(cost, w).subs({w: W, b: B})  # 신규 W 값 갱신 : 보고서 ()번 식 참조
-            nB = B - a * sp.diff(cost, b).subs({w: W, b: B})  # 신규 b 값 갱신 : 보고서 ()번 식 참조
-        self.gradient, self.intercept = nW, nB
-        return nW, nB
+        self.gradient, self.intercept = self.argmin(np.array([W, B]).T, cost, (w, b))
 
     def f(self, x):  # 회귀식
         return self.gradient*x + self.intercept
 
+    def argmin(self, v, func, sym, a=0.005,tolerance =0.00001):  # 경사감소법 옵티마이저
+        nv = np.array([-1, -1]).T  # 새로운 v 벡터
+
+        while abs(nv[0] - v[0]) > tolerance:  # v 변화량이 허용범위보다 작을 때 까지
+            v = nv
+            nc = np.array(
+                [sp.diff(func, sym[0]).subs({sym[0]: v[0], sym[1]: v[1]}),
+                 sp.diff(func, sym[1]).subs({sym[0]: v[0], sym[1]: v[1]})]).T  # Nabla C : 목표함수의 w, b에 대한 편미분 값 벡터의 전치행렬
+            nv = v - a * nc  # 새로운 v 벡터 할당
+
+        return (nv[0], nv[1])
 
 def main():
     p = int(input('Input number of points : '))  # 점 개수
