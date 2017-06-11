@@ -1,13 +1,14 @@
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import sympy as sp
+from anal_excel import xlanal
 
-class SimpleLinearRegression:  # 단순 선형회귀 클래스
+class LinearRegression:  # 선형회귀 클래스
     def __init__(self, dataset):
         self.p = len(dataset)  # 데이터 개수(순서쌍 개수)
 
-        self.x_data = [v[0] for v in dataset]  # 데이터세트에서 x, y 분리
-        self.y_data = [v[1] for v in dataset]
+        self.dataset = dataset
 
         self.gradient = 0  # 기울기 (ax+b에서 a)
         self.intercept = 0  # x 절편 (ax+b 에서 b)
@@ -33,44 +34,59 @@ class SimpleLinearRegression:  # 단순 선형회귀 클래스
             plt.ylabel('y')
             plt.show()
 
-    def regress(self, a=0.005, tolerance = 0.00001):  # 학습 메서드, a : 학습률(Learning Rate), tolerance : 오차범위
-        w, b, x = sp.symbols('w b x')  # 심볼릭 변수 정의
+    def regress(self, dimension=2, a=0.005, tolerance = 0.00001):
+        var = sp.symbols(' '.join([chr(ord('A')+i) for i in range(dimension)]))
+        sym = sp.symbols(' '.join([chr(ord('a')+i) for i in range(dimension+1)]))
 
-        f = w * x + b  # 회귀식 원형 정의
-        cost = (1 / (2 * self.p)) * sum([(self.y_data[i] - f.subs({x: self.x_data[i]})) ** 2 for i in range(self.p)])
-        # 오차함수 : 보고서 ()번 식 참조
+        if type(var) is type(sp.symbols('a')):
+            var = var,
+            sym = sym,
 
-        W, nW, B, nB = 0, -1, 0, -1  # 이전 W, 갱신 W, 이전 B, 갱신 B
-        self.gradient, self.intercept = self.argmin(np.array([W, B]).T, cost, (w, b))
+        f = sum([ sym[i] * var[i] for i in range(dimension)]) + sym[-1]
+        print(type(f))
 
-    def f(self, x):  # 회귀식
-        return self.gradient*x + self.intercept
+        cost = (1 / (2 * self.p))\
+               * sum([(self.dataset[i][-1] - f.subs({var[l]:self.dataset[i][l] for l in range(dimension)})) ** 2 for i in range(self.p)])
 
-    def argmin(self, v, func, sym, a=0.005,tolerance =0.00001):  # 경사감소법 옵티마이저
-        nv = np.array([-1, -1]).T  # 새로운 v 벡터
+        print(self.argmin(dimension+1, cost, sym))
+
+    def argmin(self, k, func, sym, a=0.005,tolerance =0.00001):  # 경사감소법 옵티마이저
+        v = np.array([0 for _ in range(k)]).T
+        nv = np.array([-1 for _ in range(k)]).T  # 새로운 v 벡터
 
         while abs(nv[0] - v[0]) > tolerance:  # v 변화량이 허용범위보다 작을 때 까지
             v = nv
             nc = np.array(
-                [sp.diff(func, sym[0]).subs({sym[0]: v[0], sym[1]: v[1]}),
-                 sp.diff(func, sym[1]).subs({sym[0]: v[0], sym[1]: v[1]})]).T  # Nabla C : 목표함수의 w, b에 대한 편미분 값 벡터의 전치행렬
+                [sp.diff(func, sym[i]).subs({sym[l]: v[l] for l in range(k)}) for i in range(k)]
+            ).T  # Nabla C : 목표함수의 w, b에 대한 편미분 값 벡터의 전치행렬
             nv = v - a * nc  # 새로운 v 벡터 할당
 
-        return (nv[0], nv[1])
+        return nv
 
 def main():
     p = int(input('Input number of points : '))  # 점 개수
     p_set = []
     for i in range(p):  # 산포도 생성
         x = np.random.normal(0.0, 0.5)
-        y = x * 0.1 + 0.3 + np.random.normal(0.0, 0.03)
-        p_set.append(([x, y]))
+        y = 0.3*x+0.5
+        p_set.append([x, y])
 
-    s = SimpleLinearRegression(p_set)   
-    s.draw()  # 그래프 그리기
-    s.regress()
-    s.draw(0)
-    s.draw(1)
-    s.draw(2)
+    s = LinearRegression(p_set)
+    #s.draw()  # 그래프 그리기
+    s.regress(1)
+    #s.draw(0)
+    #s.draw(1)
+    #s.draw(2)
 
 main()
+
+args = sys.argv[1:]
+if args[1]=='test':
+    main()
+
+elif args[1]=='excel':
+    s = LinearRegression(xlanal(args[2]))
+    s.regress(1)
+
+elif args[2]=='run':
+    pass
