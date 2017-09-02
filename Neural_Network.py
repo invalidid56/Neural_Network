@@ -33,12 +33,30 @@ nodes = [
     200,
     10
 ]
-Bradley = neuralnetwork.FeedFowardNeuralNetwork(nodes)
+
+Wrath = neuralnetwork.FeedfowardNeuralNetwork(nodes)
+Wrath.dataset = train_data
+Wrath.weight = Wrath.train(
+    epoch=5,
+    learning_rate=0.1
+)
+
+'''
+Bradley = neuralnetwork.FeedfowardNeuralNetwork_Minibatch(nodes, minibatch=10)
 Bradley.dataset = train_data
 Bradley.weight = Bradley.train(
     epoch=5,
     learning_rate=0.1,
 )
-score = sum([max_index(record[0]) is max_index(list(Bradley.query(record[1])[-1])) for record in test_data])/len(test_data)
+'''
+'''
+Selim = neuralnetwork.FeedfowardNeuralNetwork_WeightAttenuation(nodes, attenuation_constant=10**(-1))
+Selim.dataset=train_data
+Selim.weight=Selim.train(
+    epoch=1,
+    learning_rate=0.1
+)
+'''
+score = sum([max_index(record[0]) is max_index(list(Wrath.query(record[1])[-1])) for record in test_data])/len(test_data)
 
 print(score)
