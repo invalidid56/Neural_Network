@@ -1,6 +1,7 @@
 import neuralnetwork
 import os
-import matplotlib.pyplot
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 def process_data(data):
@@ -26,37 +27,19 @@ test_file.close()
 train_data = process_data(train_data)
 test_data = process_data(test_data)
 
-print(len(train_data))
-
 nodes = [
     len(train_data[0][1]),
     200,
     10
 ]
+score = lambda x : sum([max_index(record[0]) is max_index(list(x.query(record[1])[-1])) for record in test_data])/len(test_data)
+test_score = lambda x: sum([max_index(record[0]) is max_index(list(x.query(record[1])[-1])) for record in train_data])/len(train_data)
 
-Wrath = neuralnetwork.FeedfowardNeuralNetwork(nodes)
-Wrath.dataset = train_data
-Wrath.weight = Wrath.train(
-    epoch=5,
-    learning_rate=0.1
-)
-
-'''
-Bradley = neuralnetwork.FeedfowardNeuralNetwork_Minibatch(nodes, minibatch=10)
-Bradley.dataset = train_data
-Bradley.weight = Bradley.train(
-    epoch=5,
-    learning_rate=0.1,
-)
-'''
-'''
-Selim = neuralnetwork.FeedfowardNeuralNetwork_WeightAttenuation(nodes, attenuation_constant=10**(-1))
+Selim = neuralnetwork.FeedfowardNeuralNetwork_WeightAttenuation(nodes, attenuation_constant=10**(-8))
 Selim.dataset=train_data
 Selim.weight=Selim.train(
-    epoch=1,
+    epoch=5,
     learning_rate=0.1
 )
-'''
-score = sum([max_index(record[0]) is max_index(list(Wrath.query(record[1])[-1])) for record in test_data])/len(test_data)
-
-print(score)
+print('학습오차 : '+str(score(Selim)*100)+'%')
+print('테스트 오차 : '+str(test_score(Selim)*100)+'%')
